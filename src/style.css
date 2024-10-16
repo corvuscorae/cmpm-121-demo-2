@@ -30,6 +30,12 @@ body {
   min-height: 100vh;
 }
 
+canvas {
+  outline: black 3px solid;
+  border-radius: 30px;
+  filter: drop-shadow(5px 2px 5px black);
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
