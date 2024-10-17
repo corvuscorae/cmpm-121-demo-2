@@ -53,8 +53,7 @@ myCanvas.addEventListener("mousemove", (e) => {
 });
 
 myCanvas.addEventListener("drawing-changed", (e)=>{
-    ctx?.clearRect(0, 0, myCanvas.width, myCanvas.height);
-    ctx?.fillRect(0, 0, myCanvas.width, myCanvas.height);
+    resetCanvas()
     for (const line of lines) {
         if (line.length > 1) {
             ctx?.beginPath();
@@ -75,6 +74,10 @@ app.append(document.createElement("div"), clearButton);
 
 clearButton.addEventListener("click", () => {
     lines = [];
+    resetCanvas()
+});
+
+function resetCanvas(): void {
     ctx?.clearRect(0, 0, myCanvas.width, myCanvas.height);
     ctx?.fillRect(0, 0, myCanvas.width, myCanvas.height);
-});
+}
