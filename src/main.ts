@@ -17,63 +17,51 @@ myCanvas.style.cursor = "none";
 app.append(myCanvas);
 
 const ctx = myCanvas.getContext("2d");
+ctx!.textAlign = "center";
+
+// global variables
+const THIN_STROKE = 1;
+const THICK_STROKE = 5;
+
+interface Point {
+  x: number,
+  y: number,
+  stroke: number,
+};
 
 // draw on canvas
 class Line {
-  points: {x: number, y: number}[] = [];
-  stroke: number = 1;
+  points: Point[] = [];
   
   constructor(x, y, stroke) {
-    this.points.push( {x, y} );
-    this.stroke = stroke;
+    this.points.push( {x, y, stroke} );
   }
 
   display(ctx) {
-    ctx.lineWidth = this.stroke;
+    const {x, y, stroke} = this.points[0];
+    ctx.lineWidth = stroke;
     ctx!.beginPath();
-    const {x, y} = this.points[0];
     ctx!.moveTo(x, y);
     for (const {x, y} of this.points) { ctx!.lineTo(x, y); }
     ctx!.stroke();
   }
 }
 
-class Sticker {
-  point: {x: number, y: number};
-  sticker: string;
-  stroke: number;
-  
-  constructor(x, y, sticker, stroke) {
-    this.point = {x: x, y: y}
-    this.sticker = sticker;
-    this.stroke = stroke;
-  }
-
-  display(ctx) {
-    ctx.font = `${this.stroke * 10}px monospace`;
-    ctx.textAlign = "center";
-    ctx.fillText(this.sticker, this.point.x, this.point.y);
-  }
-}
-
 class Tool {
-  x: number; 
-  y: number;
-  stroke: number;
-  preview: string;
+  point: Point;
+  text: string;
 
   constructor(x, y, stroke, preview) {
-    this.x = x;
-    this.y = y;
-    this.stroke = stroke;
-    this.preview = preview;
+    this.point = this.point = {x: x, y: y, stroke: stroke};
+    this.text = preview;
   }
 
-  display(ctx) {
-    ctx.font = `${this.stroke * 10}px monospace`;
-    ctx.textAlign = "center";
-    ctx.fillText(this.preview, this.x, this.y);
-  }
+  display(ctx) { stringToCtx(ctx, this.point.stroke, this.text, this.point.x, this.point.y); }
+}
+
+function stringToCtx(ctx, stroke, text: string, x, y){
+  ctx!.font = `${stroke * 10}px monospace`;
+  ctx!.fillText(text, x, y);
 }
 
 let bus = new EventTarget();
@@ -101,11 +89,11 @@ bus.addEventListener("cursor-changed", draw);
 bus.addEventListener("tool-moved", draw);
 
 let currentLine: Line | null = null;
-let currentSticker: Sticker | null = null;
+let currentSticker: Tool | null = null;
 
-let drawing: Array<Line | Sticker> = [];
-let redoDrawing: Array<Line | Sticker> = [];
-let currentStroke = 1;
+let drawing: Array<Line | Tool> = [];
+let redoDrawing: Array<Line | Tool> = [];
+let currentStroke = THIN_STROKE;
 
 let cursor: Tool | null = null;
 let currentTool = ".";
@@ -131,7 +119,7 @@ myCanvas.addEventListener("mouseup", (e) => {
     currentLine = null;
     notify("drawing-changed");
   }else{
-    currentSticker = new Sticker(e.offsetX, e.offsetY, currentTool, currentStroke);
+    currentSticker = new Tool(e.offsetX, e.offsetY, currentStroke, currentTool);
     drawing.push(currentSticker);
     redoDrawing.splice(0, redoDrawing.length);
   }
@@ -141,7 +129,7 @@ myCanvas.addEventListener("mousemove", (e) => {
 
   if(currentTool == "."){
     if(cursor) cursorDisplay(e);
-    currentLine!.points.push({ x: e.offsetX, y: e.offsetY });
+    currentLine!.points.push({ x: e.offsetX, y: e.offsetY, stroke: currentStroke });
     notify("drawing-changed");
   } else {
     cursorDisplay(e);
@@ -194,8 +182,8 @@ function changeStoke(strokeSize){
   thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
 }
 
-const thinStroke = new Button("thin", () =>{ changeStoke(1) }).button.click();
-const thickStroke = new Button("thick", () =>{ changeStoke(5) });
+const thinStroke = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
+const thickStroke = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
 
 app.append(thicknessLabel);
 
