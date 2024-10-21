@@ -217,3 +217,23 @@ const customSticker = new Button("[+]",()=>{
   }
 });
 
+app.append(document.createElement("div"));
+const exportCanvas = new Button("export",()=>{
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = tempCanvas.height = 1024;
+
+  const tempCtx = tempCanvas.getContext("2d");
+  tempCtx!.scale(4,4);
+  tempCtx!.fillStyle = "white";
+  tempCtx!.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+  drawing.forEach((cmd) => { cmd.display(tempCtx) });
+
+  tempCanvas.toBlob(() => {
+    const anchor = document.createElement("a");
+    anchor.href = tempCanvas.toDataURL("image/png");
+    anchor.download = "canvas.png";
+    anchor.click();
+  });
+});
+
