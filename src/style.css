@@ -32,6 +32,7 @@ body {
 
 canvas {
   outline: black 3px solid;
+  background: white;
   border-radius: 30px;
   filter: drop-shadow(5px 2px 5px black);
 }

@@ -16,8 +16,8 @@ myCanvas.width = myCanvas.height = 256;
 app.append(myCanvas);
 
 const ctx = myCanvas.getContext("2d");
-ctx!.fillStyle = "white";
-ctx!.fillRect(0, 0, myCanvas.width, myCanvas.height);
+//ctx!.fillStyle = "white";
+//ctx!.fillRect(0, 0, myCanvas.width, myCanvas.height);
 
 // draw on canvas
 class Line {
@@ -120,8 +120,8 @@ myCanvas.addEventListener("mousemove", (e) => {
 });
 
 function resetCanvas(): void {
-  //ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
-  ctx!.fillRect(0, 0, myCanvas.width, myCanvas.height);
+  ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
+  //ctx!.fillRect(0, 0, myCanvas.width, myCanvas.height);
 }
 
 // clear canvas
