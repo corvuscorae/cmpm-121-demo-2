@@ -31,11 +31,9 @@ class Line {
   display(ctx) {
     ctx.lineWidth = this.stroke;
     ctx!.beginPath();
-    const { x, y } = this.points[0];
+    const {x, y} = this.points[0];
     ctx!.moveTo(x, y);
-    for (const { x, y } of this.points) {
-      ctx!.lineTo(x, y);
-    }
+    for (const {x, y} of this.points) { ctx!.lineTo(x, y); }
     ctx!.stroke();
   }
 }
@@ -60,18 +58,14 @@ class Tool {
 
 let bus = new EventTarget();
 
-function notify(name) {
-  bus.dispatchEvent(new Event(name));
-}
+function notify(name) { bus.dispatchEvent(new Event(name)); }
 
 function draw() {
   ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
 
   lines.forEach((cmd) => cmd.display(ctx));
 
-  if (cursor) {
-    cursor.display(ctx);
-  }
+  if (cursor) { cursor.display(ctx); }
 }
 
 bus.addEventListener("drawing-changed", draw);
@@ -90,13 +84,9 @@ function cursorDisplay(e){
   notify("cursor-changed");
 }
 
-myCanvas.addEventListener("mouseout", () => {
-  cursorDisplay(null);
-});
+myCanvas.addEventListener("mouseout", () => { cursorDisplay(null); });
 
-myCanvas.addEventListener("mouseenter", (e) => {
-  cursorDisplay(e);
-});
+myCanvas.addEventListener("mouseenter", (e) => { cursorDisplay(e); });
 
 myCanvas.addEventListener("mousedown", (e) => {
   cursorDisplay(null);
@@ -123,6 +113,7 @@ myCanvas.addEventListener("mousemove", (e) => {
 
 app.append(document.createElement("div"));
 
+// BUTTONS
 class Button{
   button: HTMLButtonElement = document.createElement("button");
   label: string = "";
@@ -164,10 +155,7 @@ function changeStoke(strokeSize){
   thicknessLabel.innerHTML = `line thickness: ${currentStroke = strokeSize}`; 
 }
 
-// thin line
 const thinStroke = new Button("thin", () =>{ changeStoke(1) }).button.click();
-
-// thick line
 const thickStroke = new Button("thick", () =>{ changeStoke(5) });
 
 app.append(thicknessLabel);
