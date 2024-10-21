@@ -160,18 +160,14 @@ const redo = new Button("redo", () =>{
 
 // user feedback for thickness selected
 const thicknessLabel = document.createElement("div");
-thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
+function changeStoke(strokeSize){ 
+  thicknessLabel.innerHTML = `line thickness: ${currentStroke = strokeSize}`; 
+}
 
 // thin line
-const thinStroke = new Button("thin", () =>{
-  currentStroke = 1;
-  thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
-});
+const thinStroke = new Button("thin", () =>{ changeStoke(1) }).button.click();
 
 // thick line
-const thickStroke = new Button("thick", () =>{
-  currentStroke = 5;
-  thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
-});
+const thickStroke = new Button("thick", () =>{ changeStoke(5) });
 
 app.append(thicknessLabel);
