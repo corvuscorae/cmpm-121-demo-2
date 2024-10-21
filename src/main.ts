@@ -19,17 +19,18 @@ const ctx = myCanvas.getContext("2d");
 ctx!.fillStyle = "white";
 ctx!.fillRect(0, 0, myCanvas.width, myCanvas.height);
 
-//const cursor = { active: false, x: 0, y: 0 };
-
 // draw on canvas
 class Line {
   points: {x: number, y: number}[] = [];
-
-  constructor(x, y) {
-    this.points.push({ x, y });
+  stroke: number = 1;
+  
+  constructor(x, y, stroke) {
+    this.points.push( {x, y} );
+    this.stroke = stroke;
   }
 
   display(ctx) {
+    ctx.lineWidth = this.stroke;
     ctx!.beginPath();
     const { x, y } = this.points[0];
     ctx!.moveTo(x, y);
@@ -48,9 +49,10 @@ function draw() {
 let currentLine: Line | null = null;
 let lines: Line[] = [];
 let redoLines: Line[] = [];
+let currentStroke = 1;
 
 myCanvas.addEventListener("mousedown", (e) => {
-  currentLine = new Line(e.offsetX, e.offsetY);
+  currentLine = new Line(e.offsetX, e.offsetY, currentStroke);
   lines.push(currentLine);
   redoLines.splice(0, redoLines.length);
   draw();
@@ -104,4 +106,22 @@ redoButton.addEventListener("click", () => {
     lines.push(redoLines.pop()!);
     draw();
   }
+});
+
+// thin line
+const thinButton = document.createElement("button");
+thinButton.innerHTML = "thin";
+app.append(thinButton);
+
+thinButton.addEventListener("click", () => {
+  currentStroke = 1;
+});
+
+// thick line
+const thickButton = document.createElement("button");
+thickButton.innerHTML = "thick";
+app.append(thickButton);
+
+thickButton.addEventListener("click", () => {
+  currentStroke = 5;
 });
