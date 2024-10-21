@@ -84,19 +84,22 @@ let currentStroke = 1;
 
 let cursor: Tool | null = null;
 
-myCanvas.addEventListener("mouseout", (e) => {
-  cursor = null;
+function cursorDisplay(e){
+  if(e) cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
+  else cursor = null;
   notify("cursor-changed");
+}
+
+myCanvas.addEventListener("mouseout", () => {
+  cursorDisplay(null);
 });
 
 myCanvas.addEventListener("mouseenter", (e) => {
-  cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
-  notify("cursor-changed");
+  cursorDisplay(e);
 });
 
 myCanvas.addEventListener("mousedown", (e) => {
-  cursor = null;
-  notify("cursor-changed");
+  cursorDisplay(null);
 
   currentLine = new Line(e.offsetX, e.offsetY, currentStroke);
   lines.push(currentLine);
@@ -105,51 +108,50 @@ myCanvas.addEventListener("mousedown", (e) => {
 });
 
 myCanvas.addEventListener("mouseup", (e) => {
-  cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
-  notify("cursor-changed");
+  cursorDisplay(e);
 
   currentLine = null;
   notify("drawing-changed");
 });
 
 myCanvas.addEventListener("mousemove", (e) => {
-  if(cursor){
-    cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
-    notify("cursor-changed");
-  }
+  if(cursor) cursorDisplay(e);
+
   currentLine!.points.push({ x: e.offsetX, y: e.offsetY });
   notify("drawing-changed");
 });
 
-// clear canvas
-const clearButton = document.createElement("button");
-clearButton.innerHTML = "clear";
-app.append(document.createElement("div"), clearButton);
+app.append(document.createElement("div"));
 
-clearButton.addEventListener("click", () => {
+class Button{
+  button: HTMLButtonElement = document.createElement("button");
+  label: string = "";
+  execute(){};
+
+  constructor(label, execute) {
+    this.label = label;
+    this.button.innerHTML = label;
+    app.append(this.button);
+
+    this.execute = execute;
+    this.button.addEventListener("click", () => this.execute());
+  }
+};
+
+const clear = new Button("clear", () => {  
   lines = [];
   redoLines = [];
   ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
 });
 
-// undo
-const undoButton = document.createElement("button");
-undoButton.innerHTML = "undo";
-app.append(undoButton);
-
-undoButton.addEventListener("click", () => {
+const undo = new Button("undo", () =>{
   if(lines.length > 0){
     redoLines.push(lines.pop()!);
     notify("drawing-changed");
   }
 });
 
-// redo
-const redoButton = document.createElement("button");
-redoButton.innerHTML = "redo";
-app.append(redoButton);
-
-redoButton.addEventListener("click", () => {
+const redo = new Button("redo", () =>{
   if(redoLines.length > 0){
     lines.push(redoLines.pop()!);
     notify("drawing-changed");
@@ -161,21 +163,13 @@ const thicknessLabel = document.createElement("div");
 thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
 
 // thin line
-const thinButton = document.createElement("button");
-thinButton.innerHTML = "thin";
-app.append(thinButton);
-
-thinButton.addEventListener("click", () => {
+const thinStroke = new Button("thin", () =>{
   currentStroke = 1;
   thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
 });
 
 // thick line
-const thickButton = document.createElement("button");
-thickButton.innerHTML = "thick";
-app.append(thickButton);
-
-thickButton.addEventListener("click", () => {
+const thickStroke = new Button("thick", () =>{
   currentStroke = 5;
   thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
 });
