@@ -41,35 +41,86 @@ class Line {
   }
 }
 
+class Tool {
+  x: number; 
+  y: number;
+  stroke: number;
+
+  constructor(x, y, stroke) {
+    this.x = x;
+    this.y = y;
+    this.stroke = stroke;
+  }
+
+  display(ctx) {
+    //ctx.beginPath();
+    //ctx.arc(this.x, this.y, this.stroke, 0, 2 * Math.PI);
+    //ctx.stroke();
+    ctx.font = "32px monospace";
+    ctx.fillText("*", this.x - 8, this.y + 16);
+  }
+}
+
+let bus = new EventTarget();
+
+function notify(name) {
+  bus.dispatchEvent(new Event(name));
+}
+
 function draw() {
   resetCanvas();
+  // object.forEach((cmd) => cmd.display(ctx));
+  //ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
+
   lines.forEach((cmd) => cmd.display(ctx));
+
+  if (cursor) {
+    cursor.display(ctx);
+  }
 }
+
+bus.addEventListener("drawing-changed", draw);
+bus.addEventListener("cursor-changed", draw);
 
 let currentLine: Line | null = null;
 let lines: Line[] = [];
 let redoLines: Line[] = [];
 let currentStroke = 1;
 
+let cursor: Tool | null = null;
+
+myCanvas.addEventListener("mouseout", (e) => {
+  cursor = null;
+  notify("cursor-changed");
+});
+
+myCanvas.addEventListener("mouseenter", (e) => {
+  cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
+  notify("cursor-changed");
+});
+
 myCanvas.addEventListener("mousedown", (e) => {
   currentLine = new Line(e.offsetX, e.offsetY, currentStroke);
   lines.push(currentLine);
   redoLines.splice(0, redoLines.length);
-  draw();
+  notify("drawing-changed");
 });
 
 myCanvas.addEventListener("mouseup", () => {
   currentLine = null;
-  draw();
+  notify("drawing-changed");
 });
 
 myCanvas.addEventListener("mousemove", (e) => {
+  cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
+  notify("cursor-changed");
+
   currentLine!.points.push({ x: e.offsetX, y: e.offsetY });
-  draw();
+  notify("drawing-changed");
 });
 
 function resetCanvas(): void {
-  ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
+  //ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
   ctx!.fillRect(0, 0, myCanvas.width, myCanvas.height);
 }
 
@@ -92,7 +143,7 @@ app.append(undoButton);
 undoButton.addEventListener("click", () => {
   if(lines.length > 0){
     redoLines.push(lines.pop()!);
-    draw();
+    notify("drawing-changed");
   }
 });
 
@@ -104,7 +155,7 @@ app.append(redoButton);
 redoButton.addEventListener("click", () => {
   if(redoLines.length > 0){
     lines.push(redoLines.pop()!);
-    draw();
+    notify("drawing-changed");
   }
 });
 
