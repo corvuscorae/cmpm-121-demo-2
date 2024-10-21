@@ -41,14 +41,16 @@ class Line {
 class Sticker {
   point: {x: number, y: number};
   sticker: string;
+  stroke: number;
   
-  constructor(x, y, sticker) {
+  constructor(x, y, sticker, stroke) {
     this.point = {x: x, y: y}
     this.sticker = sticker;
+    this.stroke = stroke;
   }
 
   display(ctx) {
-    ctx.font = `${10}px monospace`;
+    ctx.font = `${this.stroke * 10}px monospace`;
     ctx.textAlign = "center";
     ctx.fillText(this.sticker, this.point.x, this.point.y);
   }
@@ -129,7 +131,7 @@ myCanvas.addEventListener("mouseup", (e) => {
     currentLine = null;
     notify("drawing-changed");
   }else{
-    currentSticker = new Sticker(e.offsetX, e.offsetY, currentTool);
+    currentSticker = new Sticker(e.offsetX, e.offsetY, currentTool, currentStroke);
     drawing.push(currentSticker);
     redoDrawing.splice(0, redoDrawing.length);
   }
