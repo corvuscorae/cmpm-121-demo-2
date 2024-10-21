@@ -108,6 +108,10 @@ redoButton.addEventListener("click", () => {
   }
 });
 
+// user feedback for thickness selected
+const thicknessLabel = document.createElement("div");
+thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
+
 // thin line
 const thinButton = document.createElement("button");
 thinButton.innerHTML = "thin";
@@ -115,6 +119,7 @@ app.append(thinButton);
 
 thinButton.addEventListener("click", () => {
   currentStroke = 1;
+  thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
 });
 
 // thick line
@@ -124,4 +129,7 @@ app.append(thickButton);
 
 thickButton.addEventListener("click", () => {
   currentStroke = 5;
+  thicknessLabel.innerHTML = `line thickness: ${currentStroke}`;
 });
+
+app.append(thicknessLabel);
