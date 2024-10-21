@@ -38,6 +38,22 @@ class Line {
   }
 }
 
+class Sticker {
+  point: {x: number, y: number};
+  sticker: string;
+  
+  constructor(x, y, sticker) {
+    this.point = {x: x, y: y}
+    this.sticker = sticker;
+  }
+
+  display(ctx) {
+    ctx.font = `${10}px monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText(this.sticker, this.point.x, this.point.y);
+  }
+}
+
 class Tool {
   x: number; 
   y: number;
@@ -65,7 +81,9 @@ function notify(name) { bus.dispatchEvent(new Event(name)); }
 function draw() {
   ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
 
-  lines.forEach((cmd) => cmd.display(ctx));
+  drawing.forEach((cmd) => {
+    cmd.display(ctx)
+  });
 
   if (cursor) { cursor.display(ctx); }
 }
@@ -78,10 +96,13 @@ function cursorDisplay(e){
 
 bus.addEventListener("drawing-changed", draw);
 bus.addEventListener("cursor-changed", draw);
+bus.addEventListener("tool-moved", draw);
 
 let currentLine: Line | null = null;
-let lines: Line[] = [];
-let redoLines: Line[] = [];
+let currentSticker: Sticker | null = null;
+
+let drawing: Array<Line | Sticker> = [];
+let redoDrawing: Array<Line | Sticker> = [];
 let currentStroke = 1;
 
 let cursor: Tool | null = null;
@@ -93,24 +114,36 @@ myCanvas.addEventListener("mouseenter", (e) => { cursorDisplay(e); });
 myCanvas.addEventListener("mousedown", (e) => {
   cursorDisplay(null);
 
-  currentLine = new Line(e.offsetX, e.offsetY, currentStroke);
-  lines.push(currentLine);
-  redoLines.splice(0, redoLines.length);
-  notify("drawing-changed");
+  if(currentTool == "."){
+    currentLine = new Line(e.offsetX, e.offsetY, currentStroke);
+    drawing.push(currentLine);
+    redoDrawing.splice(0, redoDrawing.length);
+    notify("drawing-changed");
+  } 
 });
 
 myCanvas.addEventListener("mouseup", (e) => {
   cursorDisplay(e);
 
-  currentLine = null;
-  notify("drawing-changed");
+  if(currentTool == "."){
+    currentLine = null;
+    notify("drawing-changed");
+  }else{
+    currentSticker = new Sticker(e.offsetX, e.offsetY, currentTool);
+    drawing.push(currentSticker);
+    redoDrawing.splice(0, redoDrawing.length);
+  }
 });
 
 myCanvas.addEventListener("mousemove", (e) => {
-  if(cursor) cursorDisplay(e);
 
-  currentLine!.points.push({ x: e.offsetX, y: e.offsetY });
-  notify("drawing-changed");
+  if(currentTool == "."){
+    if(cursor) cursorDisplay(e);
+    currentLine!.points.push({ x: e.offsetX, y: e.offsetY });
+    notify("drawing-changed");
+  } else {
+    cursorDisplay(e);
+  }
 });
 
 app.append(document.createElement("div"));
@@ -132,21 +165,21 @@ class Button{
 };
 
 const clear = new Button("clear", () => {  
-  lines = [];
-  redoLines = [];
+  drawing = [];
+  redoDrawing = [];
   ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
 });
 
 const undo = new Button("undo", () =>{
-  if(lines.length > 0){
-    redoLines.push(lines.pop()!);
+  if(drawing.length > 0){
+    redoDrawing.push(drawing.pop()!);
     notify("drawing-changed");
   }
 });
 
 const redo = new Button("redo", () =>{
-  if(redoLines.length > 0){
-    lines.push(redoLines.pop()!);
+  if(redoDrawing.length > 0){
+    drawing.push(redoDrawing.pop()!);
     notify("drawing-changed");
   }
 });
