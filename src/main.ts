@@ -16,8 +16,6 @@ myCanvas.width = myCanvas.height = 256;
 app.append(myCanvas);
 
 const ctx = myCanvas.getContext("2d");
-//ctx!.fillStyle = "white";
-//ctx!.fillRect(0, 0, myCanvas.width, myCanvas.height);
 
 // draw on canvas
 class Line {
@@ -68,9 +66,7 @@ function notify(name) {
 }
 
 function draw() {
-  resetCanvas();
-  // object.forEach((cmd) => cmd.display(ctx));
-  //ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
+  ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
 
   lines.forEach((cmd) => cmd.display(ctx));
 
@@ -119,11 +115,6 @@ myCanvas.addEventListener("mousemove", (e) => {
   notify("drawing-changed");
 });
 
-function resetCanvas(): void {
-  ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
-  //ctx!.fillRect(0, 0, myCanvas.width, myCanvas.height);
-}
-
 // clear canvas
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear";
@@ -132,7 +123,7 @@ app.append(document.createElement("div"), clearButton);
 clearButton.addEventListener("click", () => {
   lines = [];
   redoLines = [];
-  resetCanvas()
+  ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
 });
 
 // undo
