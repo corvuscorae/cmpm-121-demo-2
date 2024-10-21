@@ -42,17 +42,19 @@ class Tool {
   x: number; 
   y: number;
   stroke: number;
+  preview: string;
 
-  constructor(x, y, stroke) {
+  constructor(x, y, stroke, preview) {
     this.x = x;
     this.y = y;
     this.stroke = stroke;
+    this.preview = preview;
   }
 
   display(ctx) {
     ctx.font = `${this.stroke * 10}px monospace`;
     ctx.textAlign = "center";
-    ctx.fillText(".", this.x, this.y);
+    ctx.fillText(this.preview, this.x, this.y);
   }
 }
 
@@ -68,6 +70,12 @@ function draw() {
   if (cursor) { cursor.display(ctx); }
 }
 
+function cursorDisplay(e){
+  if(e) cursor = new Tool(e.offsetX, e.offsetY, currentStroke, currentTool);
+  else cursor = null;
+  notify("cursor-changed");
+}
+
 bus.addEventListener("drawing-changed", draw);
 bus.addEventListener("cursor-changed", draw);
 
@@ -77,15 +85,9 @@ let redoLines: Line[] = [];
 let currentStroke = 1;
 
 let cursor: Tool | null = null;
-
-function cursorDisplay(e){
-  if(e) cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
-  else cursor = null;
-  notify("cursor-changed");
-}
+let currentTool = ".";
 
 myCanvas.addEventListener("mouseout", () => { cursorDisplay(null); });
-
 myCanvas.addEventListener("mouseenter", (e) => { cursorDisplay(e); });
 
 myCanvas.addEventListener("mousedown", (e) => {
@@ -150,12 +152,21 @@ const redo = new Button("redo", () =>{
 });
 
 // user feedback for thickness selected
-const thicknessLabel = document.createElement("div");
+app.append(document.createElement("div"));
+const thicknessLabel = document.createElement("text");
 function changeStoke(strokeSize){ 
-  thicknessLabel.innerHTML = `line thickness: ${currentStroke = strokeSize}`; 
+  currentTool = "."
+  thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
 }
 
 const thinStroke = new Button("thin", () =>{ changeStoke(1) }).button.click();
 const thickStroke = new Button("thick", () =>{ changeStoke(5) });
 
 app.append(thicknessLabel);
+
+// stickers
+app.append(document.createElement("div"));
+const emoji1 = new Button("👁️", () => { currentTool = "👁️"; });
+const emoji2 = new Button("👃", () => { currentTool = "👃"; });
+const emoji3 = new Button("👄", () => { currentTool = "👄"; });
+
