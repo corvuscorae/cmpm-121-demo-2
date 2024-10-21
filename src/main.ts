@@ -201,7 +201,19 @@ app.append(thicknessLabel);
 
 // stickers
 app.append(document.createElement("div"));
-const emoji1 = new Button("👁️", () => { currentTool = "👁️"; });
-const emoji2 = new Button("👃", () => { currentTool = "👃"; });
-const emoji3 = new Button("👄", () => { currentTool = "👄"; });
+const stickerLabels = ["👁️","👃","👄",];
+const stickers: Button[] = [];
+
+for(let label of stickerLabels){
+  stickers.push(new Button(label, () => { currentTool = label; }));
+}
+
+app.append(document.createElement("div"));
+const customSticker = new Button("[+]",()=>{
+  let newSticker = prompt("custom sticker text","😊");
+  if(newSticker) {
+    stickerLabels.push(newSticker);
+    stickers.push(new Button(newSticker, () => { currentTool = newSticker; }))
+  }
+});
 
