@@ -13,6 +13,7 @@ app.append(title);
 // canvas
 const myCanvas = document.createElement("canvas");
 myCanvas.width = myCanvas.height = 256;
+myCanvas.style.cursor = "none";
 app.append(myCanvas);
 
 const ctx = myCanvas.getContext("2d");
@@ -51,11 +52,9 @@ class Tool {
   }
 
   display(ctx) {
-    //ctx.beginPath();
-    //ctx.arc(this.x, this.y, this.stroke, 0, 2 * Math.PI);
-    //ctx.stroke();
-    ctx.font = "32px monospace";
-    ctx.fillText("*", this.x - 8, this.y + 16);
+    ctx.font = `${this.stroke * 10}px monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText(".", this.x, this.y);
   }
 }
 
@@ -96,21 +95,28 @@ myCanvas.addEventListener("mouseenter", (e) => {
 });
 
 myCanvas.addEventListener("mousedown", (e) => {
+  cursor = null;
+  notify("cursor-changed");
+
   currentLine = new Line(e.offsetX, e.offsetY, currentStroke);
   lines.push(currentLine);
   redoLines.splice(0, redoLines.length);
   notify("drawing-changed");
 });
 
-myCanvas.addEventListener("mouseup", () => {
+myCanvas.addEventListener("mouseup", (e) => {
+  cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
+  notify("cursor-changed");
+
   currentLine = null;
   notify("drawing-changed");
 });
 
 myCanvas.addEventListener("mousemove", (e) => {
-  cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
-  notify("cursor-changed");
-
+  if(cursor){
+    cursor = new Tool(e.offsetX, e.offsetY, currentStroke);
+    notify("cursor-changed");
+  }
   currentLine!.points.push({ x: e.offsetX, y: e.offsetY });
   notify("drawing-changed");
 });
