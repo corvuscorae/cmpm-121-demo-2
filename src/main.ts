@@ -214,26 +214,23 @@ app.append(thicknessLabel);
 
 // color selection
 app.append(document.createElement("div"));
-let colorChoices = ["black", "red", "blue", "green"];
-let colors: Button[] = [];
-for(let color of colorChoices){
-  let newColor = new Button(color, () => {
-    currentTool = PLAIN_STROKE;
-    currentColor = color;
-  });
-  newColor.button.style.backgroundColor = color;
-  colors.push(newColor);
-}
+const rSlider = { key: "R", elem: document.createElement("input")};
+const gSlider = { key: "G", elem: document.createElement("input")};
+const bSlider = { key: "B", elem: document.createElement("input")};
+const sliders = [rSlider, gSlider, bSlider];
 
-// ADD custom color
-const customColor = new Button("[+]",()=>{
-  let newColor = prompt("custom color [name, hex code, or rgb value]","purple");
-  if(newColor) { 
-    currentTool = PLAIN_STROKE;
-    currentColor = newColor; 
-    customColor.button.style.backgroundColor = newColor; 
-  }
-});
+for(let slider of sliders){
+  slider.elem.type = "range";
+  slider.elem.min = "0";
+  slider.elem.max = "255";
+  slider.elem.value = "0";
+  slider.elem.id = "rotationSlider";
+  app.append(document.createElement("div"), slider.key, slider.elem);
+
+  slider.elem.addEventListener("input", (e)=>{
+    currentColor = `rgb(${rSlider.elem.value}, ${gSlider.elem.value}, ${bSlider.elem.value})`;
+  });
+}
 
 // default tools
 app.append(document.createElement("div"));
