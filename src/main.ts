@@ -19,17 +19,40 @@ app.append(myCanvas);
 const ctx = myCanvas.getContext("2d");
 ctx!.textAlign = "center";
 
-// global variables
+//* CONSTANTS *//
 const THIN_STROKE = 1;
 const THICK_STROKE = 5;
 
+//* EVENT HANDLERS *//
+let bus = new EventTarget();
+bus.addEventListener("drawing-changed", draw);
+bus.addEventListener("cursor-changed", draw);
+
+function notify(name) { bus.dispatchEvent(new Event(name)); }
+
+function draw() {
+  ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
+
+  drawing.forEach((cmd) => {
+    cmd.display(ctx)
+  });
+
+  if (cursor) { cursor.display(ctx); }
+}
+
+function cursorDisplay(e){
+  if(e) cursor = new Tool(e.offsetX, e.offsetY, currentStroke, currentTool);
+  else cursor = null;
+  notify("cursor-changed");
+}
+
+//* DATA CONTAINERS FOR DRAWING *//
 interface Point {
   x: number,
   y: number,
   stroke: number,
 };
 
-// draw on canvas
 class Line {
   points: Point[] = [];
   
@@ -56,46 +79,23 @@ class Tool {
     this.text = preview;
   }
 
-  display(ctx) { stringToCtx(ctx, this.point.stroke, this.text, this.point.x, this.point.y); }
+  display(ctx) {
+    const {x, y, stroke} = this.point;
+    ctx!.font = `${stroke * 10}px monospace`;
+    ctx!.fillText(this.text, x, y);
+  }
 }
 
-function stringToCtx(ctx, stroke, text: string, x, y){
-  ctx!.font = `${stroke * 10}px monospace`;
-  ctx!.fillText(text, x, y);
-}
-
-let bus = new EventTarget();
-
-function notify(name) { bus.dispatchEvent(new Event(name)); }
-
-function draw() {
-  ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
-
-  drawing.forEach((cmd) => {
-    cmd.display(ctx)
-  });
-
-  if (cursor) { cursor.display(ctx); }
-}
-
-function cursorDisplay(e){
-  if(e) cursor = new Tool(e.offsetX, e.offsetY, currentStroke, currentTool);
-  else cursor = null;
-  notify("cursor-changed");
-}
-
-bus.addEventListener("drawing-changed", draw);
-bus.addEventListener("cursor-changed", draw);
-bus.addEventListener("tool-moved", draw);
-
+//* MOUSE EVENT LISTENERS *//
 let currentLine: Line | null = null;
 let currentSticker: Tool | null = null;
 
 let drawing: Array<Line | Tool> = [];
 let redoDrawing: Array<Line | Tool> = [];
-let currentStroke = THIN_STROKE;
 
 let cursor: Tool | null = null;
+
+let currentStroke = THIN_STROKE;
 let currentTool = ".";
 
 myCanvas.addEventListener("mouseout", () => { cursorDisplay(null); });
@@ -136,9 +136,9 @@ myCanvas.addEventListener("mousemove", (e) => {
   }
 });
 
+//* BUTTONS *//
 app.append(document.createElement("div"));
 
-// BUTTONS
 class Button{
   button: HTMLButtonElement = document.createElement("button");
   label: string = "";
@@ -174,6 +174,10 @@ const redo = new Button("redo", () =>{
   }
 });
 
+app.append(document.createElement("div"));
+const thinStroke = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
+const thickStroke = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
+
 // user feedback for thickness selected
 app.append(document.createElement("div"));
 const thicknessLabel = document.createElement("text");
@@ -181,9 +185,6 @@ function changeStoke(strokeSize){
   currentTool = "."
   thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
 }
-
-const thinStroke = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
-const thickStroke = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
 
 app.append(thicknessLabel);
 
@@ -196,6 +197,7 @@ for(let label of stickerLabels){
   stickers.push(new Button(label, () => { currentTool = label; }));
 }
 
+// custom stickers
 app.append(document.createElement("div"));
 const customSticker = new Button("[+]",()=>{
   let newSticker = prompt("custom sticker text","😊");
@@ -205,6 +207,7 @@ const customSticker = new Button("[+]",()=>{
   }
 });
 
+// export
 app.append(document.createElement("div"));
 const exportCanvas = new Button("export",()=>{
   const tempCanvas = document.createElement("canvas");
@@ -214,6 +217,7 @@ const exportCanvas = new Button("export",()=>{
   tempCtx!.scale(4,4);
   tempCtx!.fillStyle = "white";
   tempCtx!.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+  tempCtx!.textAlign = "center";
 
   drawing.forEach((cmd) => { cmd.display(tempCtx) });
 
