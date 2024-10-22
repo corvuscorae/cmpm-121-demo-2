@@ -37,7 +37,10 @@ function drawToCanvas() {
 }
 
 function moveCursor(mouseEvent){
-  if(mouseEvent) cursor = new Tool(mouseEvent.offsetX, mouseEvent.offsetY, currentStroke, currentTool);
+  if(mouseEvent) {
+    let point = {x: mouseEvent.offsetX, y: mouseEvent.offsetY, stroke: currentStroke};
+    cursor = new Tool(point, currentTool, currentColor);
+  }
   else cursor = null;
   notify("cursor-changed");
 }
@@ -51,14 +54,18 @@ interface Point {
 
 class Line {
   points: Point[] = [];
+  color: string;
   
-  constructor(x, y, stroke) {
-    this.points.push( {x, y, stroke} );
+  constructor(point, color?) {
+    this.points.push( point );
+    if(color) this.color = color;
+    else this.color = "black";
   }
 
   display(ctx) {
     const {x, y, stroke} = this.points[0];
     ctx.lineWidth = stroke;
+    ctx.strokeStyle = this.color;
     ctx!.beginPath();
     ctx!.moveTo(x, y);
     for (const {x, y} of this.points) { ctx!.lineTo(x, y); }
@@ -69,16 +76,20 @@ class Line {
 class Tool {
   point: Point;
   text: string;
+  color: string;
 
-  constructor(x, y, stroke, preview) {
-    this.point = this.point = {x: x, y: y, stroke: stroke};
+  constructor(point, preview, color?) {
+    this.point = {x: point.x, y: point.y, stroke: point.stroke};
     this.text = preview;
+    if(color) this.color = color;
+    else this.color = "black";
   }
 
   display(ctx) {
     const {x, y, stroke} = this.point;
-    ctx!.font = `${stroke * 10}px monospace`;
-    ctx!.fillText(this.text, x, y);
+    ctx!.font = `${this.point.stroke * 10}px monospace`;
+    ctx!.fillStyle = currentColor;
+    ctx!.fillText(this.text, this.point.x, this.point.y);
   }
 }
 
@@ -92,6 +103,7 @@ let redoDrawing: Array<Line | Tool> = [];
 let cursor: Tool | null = null;
 
 let currentStroke = THIN_STROKE;
+let currentColor = "black";
 let currentTool = ".";
 
 myCanvas.addEventListener("mouseout", () => { moveCursor(null); });
@@ -101,7 +113,8 @@ myCanvas.addEventListener("mousedown", (e) => {
   moveCursor(null);
 
   if(currentTool == "."){
-    currentLine = new Line(e.offsetX, e.offsetY, currentStroke);
+    let point = {x: e.offsetX, y: e.offsetY, stroke: currentStroke};
+    currentLine = new Line(point, currentColor);
     drawing.push(currentLine);
     redoDrawing.splice(0, redoDrawing.length);
     notify("drawing-changed");
@@ -115,7 +128,8 @@ myCanvas.addEventListener("mouseup", (e) => {
     currentLine = null;
     notify("drawing-changed");
   }else{
-    currentSticker = new Tool(e.offsetX, e.offsetY, currentStroke, currentTool);
+    let point = {x: e.offsetX, y: e.offsetY, stroke: currentStroke};
+    currentSticker = new Tool(point, currentTool, currentColor);
     drawing.push(currentSticker);
     redoDrawing.splice(0, redoDrawing.length);
   }
@@ -164,6 +178,25 @@ function pushPop(pushTo, popFrom){
 const undo = new Button("undo", () =>{ pushPop(redoDrawing, drawing); });
 const redo = new Button("redo", () =>{ pushPop(drawing, redoDrawing); });
 
+// color selection
+app.append(document.createElement("div"));
+let colorChoices = ["black", "red", "blue", "green"];
+let colors: Button[] = [];
+for(let color of colorChoices){
+  let newColor = new Button(color, () => {currentColor = color});
+  newColor.button.style.backgroundColor = color;
+  colors.push(newColor);
+}
+
+// ADD custom color
+const customColor = new Button("[+]",()=>{
+  let newColor = prompt("custom color [name, hex code, or rgb value]","purple");
+  if(newColor) { 
+    currentColor = newColor; 
+    customColor.button.style.backgroundColor = newColor; 
+  }
+});
+
 // thickness selection
 app.append(document.createElement("div"));
 const thicknessLabel = document.createElement("text");
@@ -186,7 +219,6 @@ for(let label of toolLabels){
 }
 
 // ADD custom stickers
-app.append(document.createElement("div"));
 const customSticker = new Button("[+]",()=>{
   let newSticker = prompt("custom sticker text","😊");
   if(newSticker) {
@@ -217,3 +249,4 @@ const exportCanvas = new Button("export",()=>{
   });
 });
 
+// TODO: containers to group buttons, etc
