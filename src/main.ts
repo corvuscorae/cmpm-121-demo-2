@@ -25,23 +25,19 @@ const THICK_STROKE = 5;
 
 //* EVENT HANDLERS *//
 let bus = new EventTarget();
-bus.addEventListener("drawing-changed", draw);
-bus.addEventListener("cursor-changed", draw);
+bus.addEventListener("drawing-changed", drawToCanvas);
+bus.addEventListener("cursor-changed", drawToCanvas);
 
 function notify(name) { bus.dispatchEvent(new Event(name)); }
 
-function draw() {
+function drawToCanvas() {
   ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
-
-  drawing.forEach((cmd) => {
-    cmd.display(ctx)
-  });
-
+  drawing.forEach((cmd) => { cmd.display(ctx) });
   if (cursor) { cursor.display(ctx); }
 }
 
-function cursorDisplay(e){
-  if(e) cursor = new Tool(e.offsetX, e.offsetY, currentStroke, currentTool);
+function moveCursor(mouseEvent){
+  if(mouseEvent) cursor = new Tool(mouseEvent.offsetX, mouseEvent.offsetY, currentStroke, currentTool);
   else cursor = null;
   notify("cursor-changed");
 }
@@ -98,11 +94,11 @@ let cursor: Tool | null = null;
 let currentStroke = THIN_STROKE;
 let currentTool = ".";
 
-myCanvas.addEventListener("mouseout", () => { cursorDisplay(null); });
-myCanvas.addEventListener("mouseenter", (e) => { cursorDisplay(e); });
+myCanvas.addEventListener("mouseout", () => { moveCursor(null); });
+myCanvas.addEventListener("mouseenter", (e) => { moveCursor(e); });
 
 myCanvas.addEventListener("mousedown", (e) => {
-  cursorDisplay(null);
+  moveCursor(null);
 
   if(currentTool == "."){
     currentLine = new Line(e.offsetX, e.offsetY, currentStroke);
@@ -113,7 +109,7 @@ myCanvas.addEventListener("mousedown", (e) => {
 });
 
 myCanvas.addEventListener("mouseup", (e) => {
-  cursorDisplay(e);
+  moveCursor(e);
 
   if(currentTool == "."){
     currentLine = null;
@@ -128,11 +124,11 @@ myCanvas.addEventListener("mouseup", (e) => {
 myCanvas.addEventListener("mousemove", (e) => {
 
   if(currentTool == "."){
-    if(cursor) cursorDisplay(e);
+    if(cursor) moveCursor(e);
     currentLine!.points.push({ x: e.offsetX, y: e.offsetY, stroke: currentStroke });
     notify("drawing-changed");
   } else {
-    cursorDisplay(e);
+    moveCursor(e);
   }
 });
 
@@ -169,38 +165,38 @@ function pushPop(pushTo, popFrom){
 const undo = new Button("undo", () =>{ pushPop(redoDrawing, drawing); });
 const redo = new Button("redo", () =>{ pushPop(drawing, redoDrawing); });
 
-// stroke thickness selection
+// thickness selection
 app.append(document.createElement("div"));
 const thicknessLabel = document.createElement("text");
 function changeStoke(strokeSize){ 
   thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
 }
 
-const thinStroke = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
-const thickStroke = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
+const thin = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
+const thick = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
 
 app.append(thicknessLabel);
 
-// stickers
+// default tools
 app.append(document.createElement("div"));
-const stickerLabels = ["👁️","👃","👄",];
-const stickers: Button[] = [];
+const toolLabels = [".", "👁️","👃","👄",];
+const tools: Button[] = [];
 
-for(let label of stickerLabels){
-  stickers.push(new Button(label, () => { currentTool = label; }));
+for(let label of toolLabels){
+  tools.push(new Button(label, () => { currentTool = label; }));
 }
 
-// custom stickers
+// ADD custom stickers
 app.append(document.createElement("div"));
 const customSticker = new Button("[+]",()=>{
   let newSticker = prompt("custom sticker text","😊");
   if(newSticker) {
-    stickerLabels.push(newSticker);
-    stickers.push(new Button(newSticker, () => { currentTool = newSticker; }))
+    toolLabels.push(newSticker);
+    tools.push(new Button(newSticker, () => { currentTool = newSticker; }))
   }
 });
 
-// export
+//* EXPORT *//
 app.append(document.createElement("div"));
 const exportCanvas = new Button("export",()=>{
   const tempCanvas = document.createElement("canvas");
