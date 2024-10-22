@@ -200,24 +200,18 @@ const exportCanvas = new Button("export",()=>{
   });
 });
 
-// thickness selection
+// SLIDERS //
+// thickness and color
 app.append(document.createElement("div"));
 const thicknessLabel = document.createElement("text");
-function changeStoke(strokeSize){ 
-  thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
-}
+thicknessLabel.innerHTML = ` stroke: ${currentStroke}`; 
 
-const thin = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
-const thick = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
-
-app.append(thicknessLabel);
-
-// color selection
 app.append(document.createElement("div"));
-const rSlider = { key: "R", elem: document.createElement("input")};
-const gSlider = { key: "G", elem: document.createElement("input")};
-const bSlider = { key: "B", elem: document.createElement("input")};
-const sliders = [rSlider, gSlider, bSlider];
+const strokeSlider = {key: "stroke ", elem: document.createElement("input")};
+const rSlider = { key: "R  ", elem: document.createElement("input")};
+const gSlider = { key: "G  ", elem: document.createElement("input")};
+const bSlider = { key: "B  ", elem: document.createElement("input")};
+const sliders = [strokeSlider, rSlider, gSlider, bSlider];
 
 for(let slider of sliders){
   slider.elem.type = "range";
@@ -229,6 +223,8 @@ for(let slider of sliders){
 
   slider.elem.addEventListener("input", (e)=>{
     currentColor = `rgb(${rSlider.elem.value}, ${gSlider.elem.value}, ${bSlider.elem.value})`;
+    currentStroke = +strokeSlider.elem.value / 10;
+    thicknessLabel.innerHTML = ` stroke: ${currentStroke}`; 
   });
 }
 
