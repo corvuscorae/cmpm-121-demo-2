@@ -169,18 +169,15 @@ function pushPop(pushTo, popFrom){
 const undo = new Button("undo", () =>{ pushPop(redoDrawing, drawing); });
 const redo = new Button("redo", () =>{ pushPop(drawing, redoDrawing); });
 
-app.append(document.createElement("div"));
-function changeStoke(strokeSize){ 
-  //currentTool = "."
-  thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
-}
-const thinStroke = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
-const thickStroke = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
-
-// user feedback for thickness selected
+// stroke thickness selection
 app.append(document.createElement("div"));
 const thicknessLabel = document.createElement("text");
+function changeStoke(strokeSize){ 
+  thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
+}
 
+const thinStroke = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
+const thickStroke = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
 
 app.append(thicknessLabel);
 
