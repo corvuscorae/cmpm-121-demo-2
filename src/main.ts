@@ -178,6 +178,39 @@ function pushPop(pushTo, popFrom){
 const undo = new Button("undo", () =>{ pushPop(redoDrawing, drawing); });
 const redo = new Button("redo", () =>{ pushPop(drawing, redoDrawing); });
 
+// export
+const exportCanvas = new Button("export",()=>{
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = tempCanvas.height = 1024;
+
+  const tempCtx = tempCanvas.getContext("2d");
+  tempCtx!.scale(4,4);
+  tempCtx!.fillStyle = "white";
+  tempCtx!.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+  tempCtx!.textAlign = "center";
+
+  drawing.forEach((cmd) => { cmd.display(tempCtx) });
+
+  tempCanvas.toBlob(() => {
+    const anchor = document.createElement("a");
+    anchor.href = tempCanvas.toDataURL("image/png");
+    anchor.download = "canvas.png";
+    anchor.click();
+  });
+});
+
+// thickness selection
+app.append(document.createElement("div"));
+const thicknessLabel = document.createElement("text");
+function changeStoke(strokeSize){ 
+  thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
+}
+
+const thin = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
+const thick = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
+
+app.append(thicknessLabel);
+
 // color selection
 app.append(document.createElement("div"));
 let colorChoices = ["black", "red", "blue", "green"];
@@ -197,18 +230,6 @@ const customColor = new Button("[+]",()=>{
   }
 });
 
-// thickness selection
-app.append(document.createElement("div"));
-const thicknessLabel = document.createElement("text");
-function changeStoke(strokeSize){ 
-  thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
-}
-
-const thin = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
-const thick = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
-
-app.append(thicknessLabel);
-
 // default tools
 app.append(document.createElement("div"));
 const toolLabels = [".", "👁️","👃","👄",];
@@ -219,34 +240,13 @@ for(let label of toolLabels){
 }
 
 // ADD custom stickers
+app.append(document.createElement("div"));
 const customSticker = new Button("[+]",()=>{
   let newSticker = prompt("custom sticker text","😊");
-  if(newSticker) {
+  if(newSticker && !toolLabels.find((elem) => elem === newSticker)) {
     toolLabels.push(newSticker);
     tools.push(new Button(newSticker, () => { currentTool = newSticker; }))
   }
-});
-
-//* EXPORT *//
-app.append(document.createElement("div"));
-const exportCanvas = new Button("export",()=>{
-  const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = tempCanvas.height = 1024;
-
-  const tempCtx = tempCanvas.getContext("2d");
-  tempCtx!.scale(4,4);
-  tempCtx!.fillStyle = "white";
-  tempCtx!.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-  tempCtx!.textAlign = "center";
-
-  drawing.forEach((cmd) => { cmd.display(tempCtx) });
-
-  tempCanvas.toBlob(() => {
-    const anchor = document.createElement("a");
-    anchor.href = tempCanvas.toDataURL("image/png");
-    anchor.download = "canvas.png";
-    anchor.click();
-  });
 });
 
 // TODO: containers to group buttons, etc
