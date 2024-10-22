@@ -216,7 +216,10 @@ app.append(document.createElement("div"));
 let colorChoices = ["black", "red", "blue", "green"];
 let colors: Button[] = [];
 for(let color of colorChoices){
-  let newColor = new Button(color, () => {currentColor = color});
+  let newColor = new Button(color, () => {
+    currentTool = ".";
+    currentColor = color;
+  });
   newColor.button.style.backgroundColor = color;
   colors.push(newColor);
 }
@@ -225,6 +228,7 @@ for(let color of colorChoices){
 const customColor = new Button("[+]",()=>{
   let newColor = prompt("custom color [name, hex code, or rgb value]","purple");
   if(newColor) { 
+    currentTool = ".";
     currentColor = newColor; 
     customColor.button.style.backgroundColor = newColor; 
   }
