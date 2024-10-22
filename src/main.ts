@@ -22,6 +22,7 @@ ctx!.textAlign = "center";
 //* CONSTANTS *//
 const THIN_STROKE = 1;
 const THICK_STROKE = 5;
+const PLAIN_STROKE = ".";
 
 //* EVENT HANDLERS *//
 let bus = new EventTarget();
@@ -104,7 +105,7 @@ let cursor: Tool | null = null;
 
 let currentStroke = THIN_STROKE;
 let currentColor = "black";
-let currentTool = ".";
+let currentTool = PLAIN_STROKE;
 
 myCanvas.addEventListener("mouseout", () => { moveCursor(null); });
 myCanvas.addEventListener("mouseenter", (e) => { moveCursor(e); });
@@ -112,7 +113,7 @@ myCanvas.addEventListener("mouseenter", (e) => { moveCursor(e); });
 myCanvas.addEventListener("mousedown", (e) => {
   moveCursor(null);
 
-  if(currentTool == "."){
+  if(currentTool == PLAIN_STROKE){
     let point = {x: e.offsetX, y: e.offsetY, stroke: currentStroke};
     currentLine = new Line(point, currentColor);
     drawing.push(currentLine);
@@ -124,7 +125,7 @@ myCanvas.addEventListener("mousedown", (e) => {
 myCanvas.addEventListener("mouseup", (e) => {
   moveCursor(e);
 
-  if(currentTool == "."){
+  if(currentTool == PLAIN_STROKE){
     currentLine = null;
     notify("drawing-changed");
   }else{
@@ -136,7 +137,7 @@ myCanvas.addEventListener("mouseup", (e) => {
 });
 
 myCanvas.addEventListener("mousemove", (e) => {
-  if(currentTool == "."){
+  if(currentTool == PLAIN_STROKE){
     if(cursor) moveCursor(e); // if line tool, will keep cursor hidden when mouse down
     currentLine!.points.push({ x: e.offsetX, y: e.offsetY, stroke: currentStroke });
     notify("drawing-changed");
@@ -217,7 +218,7 @@ let colorChoices = ["black", "red", "blue", "green"];
 let colors: Button[] = [];
 for(let color of colorChoices){
   let newColor = new Button(color, () => {
-    currentTool = ".";
+    currentTool = PLAIN_STROKE;
     currentColor = color;
   });
   newColor.button.style.backgroundColor = color;
@@ -228,7 +229,7 @@ for(let color of colorChoices){
 const customColor = new Button("[+]",()=>{
   let newColor = prompt("custom color [name, hex code, or rgb value]","purple");
   if(newColor) { 
-    currentTool = ".";
+    currentTool = PLAIN_STROKE;
     currentColor = newColor; 
     customColor.button.style.backgroundColor = newColor; 
   }
@@ -236,7 +237,7 @@ const customColor = new Button("[+]",()=>{
 
 // default tools
 app.append(document.createElement("div"));
-const toolLabels = [".", "👁️","👃","👄",];
+const toolLabels = [PLAIN_STROKE, "👁️","👃","👄",];
 const tools: Button[] = [];
 
 for(let label of toolLabels){
