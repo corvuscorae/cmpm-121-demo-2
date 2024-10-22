@@ -160,31 +160,27 @@ const clear = new Button("clear", () => {
   ctx!.clearRect(0, 0, myCanvas.width, myCanvas.height);
 });
 
-const undo = new Button("undo", () =>{
-  if(drawing.length > 0){
-    redoDrawing.push(drawing.pop()!);
+function pushPop(pushTo, popFrom){
+  if(popFrom.length > 0){
+    pushTo.push(popFrom.pop()!);
     notify("drawing-changed");
   }
-});
-
-const redo = new Button("redo", () =>{
-  if(redoDrawing.length > 0){
-    drawing.push(redoDrawing.pop()!);
-    notify("drawing-changed");
-  }
-});
+}
+const undo = new Button("undo", () =>{ pushPop(redoDrawing, drawing); });
+const redo = new Button("redo", () =>{ pushPop(drawing, redoDrawing); });
 
 app.append(document.createElement("div"));
+function changeStoke(strokeSize){ 
+  //currentTool = "."
+  thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
+}
 const thinStroke = new Button("thin", () =>{ changeStoke(THIN_STROKE) }).button.click();
 const thickStroke = new Button("thick", () =>{ changeStoke(THICK_STROKE) });
 
 // user feedback for thickness selected
 app.append(document.createElement("div"));
 const thicknessLabel = document.createElement("text");
-function changeStoke(strokeSize){ 
-  currentTool = "."
-  thicknessLabel.innerHTML = ` stroke: ${currentStroke = strokeSize}`; 
-}
+
 
 app.append(thicknessLabel);
 
