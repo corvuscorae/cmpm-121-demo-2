@@ -223,8 +223,9 @@ for(let slider of sliders){
 
   slider.elem.addEventListener("input", (e)=>{
     currentColor = `rgb(${rSlider.elem.value}, ${gSlider.elem.value}, ${bSlider.elem.value})`;
-    currentStroke = +strokeSlider.elem.value / 10;
+    currentStroke = +strokeSlider.elem.value / 10 + 1;
     thicknessLabel.innerHTML = ` stroke: ${currentStroke}`; 
+    if(slider.key != "stroke ") currentTool = PLAIN_STROKE;
   });
 }
 
