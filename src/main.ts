@@ -122,9 +122,8 @@ myCanvas.addEventListener("mouseup", (e) => {
 });
 
 myCanvas.addEventListener("mousemove", (e) => {
-
   if(currentTool == "."){
-    if(cursor) moveCursor(e);
+    if(cursor) moveCursor(e); // if line tool, will keep cursor hidden when mouse down
     currentLine!.points.push({ x: e.offsetX, y: e.offsetY, stroke: currentStroke });
     notify("drawing-changed");
   } else {
